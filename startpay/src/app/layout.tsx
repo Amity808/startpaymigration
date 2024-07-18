@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { WagmiProvider, http } from 'wagmi'
+import { zkSyncSepoliaTestnet } from 'wagmi/chains'
+import { getDefaultConfig } from '@rainbow-me/rainbowkit'
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from 'react-toastify';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,9 +21,56 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+  const headerStyle = {
+    backgroundImage: `url('/bg-dashboard.png')`,
+    /* Additional styles can be added here */
+
+    // Set background size to cover the container by default
+    backgroundSize: "cover",
+
+    // Center the background image by default
+    backgroundPosition: "center",
+
+    // Media query for mobile devices
+    "@media (maxWidth: 768px)": {
+      backgroundSize: "auto", // Adjust background size for smaller screens
+      backgroundPosition: "center", // You can adjust this as needed
+    },
+  };
+
+  const config = getDefaultConfig({
+    appName: 'Start Pa',
+    projectId: 'YOUR_PROJECT_ID',
+    chains: [zkSyncSepoliaTestnet],
+    transports: {
+      [zkSyncSepoliaTestnet.id]: http(),
+    },
+  })
+  const queryClient = new QueryClient()
   return (
     <html lang="en">
-      <body className={`bg-gradient-to-r from-blue-100 via-blue-300 to-blue-500 ${inter.className}`}>{children}</body>
+      <body style={headerStyle} className={`bg-gradient-to-r from-blue-100 via-blue-300 to-blue-500 ${inter.className}`}>
+        <WagmiProvider config={config}>
+          <QueryClientProvider client={queryClient}>
+            <RainbowKitProvider>
+            <ToastContainer
+                        position="top-center"
+                        autoClose={5000}
+                        hideProgressBar={false}
+                        newestOnTop={false}
+                        closeOnClick
+                        rtl={false}
+                        pauseOnFocusLoss
+                        draggable
+                        pauseOnHover
+                        theme="light"
+                    />
+              {children}
+            </RainbowKitProvider>
+          </QueryClientProvider>
+        </WagmiProvider>
+      </body>
     </html>
   );
 }
